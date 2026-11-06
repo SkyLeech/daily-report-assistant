@@ -6,6 +6,11 @@ import type { DailyReportData } from "@/lib/daily-report";
 
 export function SourceCard({ data }: { data: DailyReportData }) {
   const hasItems = data.sourceCompleted.length > 0;
+  const isWeek = data.sourceEndDate !== null;
+  const sourceLabel = isWeek ? "上周已完成" : "昨日已完成";
+  const rangeLabel = data.sourceEndDate
+    ? `${formatMonthDay(data.sourceDate)} - ${formatMonthDay(data.sourceEndDate)}`
+    : formatDateWithWeekday(data.sourceDate);
 
   return (
     <section className="animate-rise stagger-3 rounded-3xl border border-border/70 bg-surface p-5 shadow-surface sm:p-6">
@@ -15,7 +20,7 @@ export function SourceCard({ data }: { data: DailyReportData }) {
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-base font-semibold tracking-tight">昨日已完成</h2>
+            <h2 className="text-base font-semibold tracking-tight">{sourceLabel}</h2>
             <Link
               className="inline-flex items-center gap-0.5 text-[11px] font-medium text-accent-soft-foreground hover:underline"
               href={`/daily-report?date=${data.sourceDate}`}
@@ -25,7 +30,7 @@ export function SourceCard({ data }: { data: DailyReportData }) {
             </Link>
           </div>
           <p className="mt-0.5 text-xs text-muted">
-            来自 {formatDateWithWeekday(data.sourceDate)}
+            来自 {rangeLabel}
             {data.sourceIsRecent ? " · 最近有记录的日期" : ""}
           </p>
         </div>
@@ -54,9 +59,11 @@ export function SourceCard({ data }: { data: DailyReportData }) {
       ) : (
         <div className="mt-4 rounded-2xl border border-dashed border-border/80 bg-background-secondary/45 px-4 py-6 text-center">
           <CheckCircle2 className="mx-auto size-5 text-muted" />
-          <p className="mt-2 text-sm font-medium text-foreground/75">这一天还没有完成记录</p>
+          <p className="mt-2 text-sm font-medium text-foreground/75">
+            {isWeek ? "这一周还没有完成记录" : "这一天还没有完成记录"}
+          </p>
           <p className="mt-1 text-xs text-muted">
-            去 {formatMonthDay(data.sourceDate)} 补一条，日报会自动更新。
+            {isWeek ? "去上周补一条，日报会自动更新。" : `去 ${formatMonthDay(data.sourceDate)} 补一条，日报会自动更新。`}
           </p>
           <Link
             className="mt-3 inline-flex items-center gap-1 rounded-full bg-accent-soft px-3 py-1.5 text-[11px] font-medium text-accent-soft-foreground transition-colors hover:bg-accent-soft-hover"
@@ -69,7 +76,7 @@ export function SourceCard({ data }: { data: DailyReportData }) {
       )}
 
       <p className="mt-4 border-t border-border/60 pt-3 text-[11px] leading-5 text-muted">
-        这些完成事项会作为「昨日已完成」进入上面的日报预览。
+        这些完成事项会作为「{sourceLabel}」进入上面的日报预览。
       </p>
     </section>
   );

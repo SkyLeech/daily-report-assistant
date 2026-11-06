@@ -13,6 +13,7 @@
     "db:migrate:remote": "wrangler d1 migrations apply my-tools-db --remote",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy:win": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-windows.ps1",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload"
   },
   "dependencies": {

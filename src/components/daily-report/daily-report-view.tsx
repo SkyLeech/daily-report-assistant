@@ -109,9 +109,13 @@ export function DailyReportView({ data }: { data: DailyReportData }) {
       <div className="mt-6 grid gap-2 sm:grid-cols-3">
         <StatCard
           delay="stagger-1"
-          detail={formatMonthDay(data.sourceDate)}
+          detail={
+            data.sourceEndDate
+              ? `${formatMonthDay(data.sourceDate)}-${formatMonthDay(data.sourceEndDate)}`
+              : formatMonthDay(data.sourceDate)
+          }
           icon={CalendarCheck2}
-          label="昨日已完成"
+          label={data.sourceEndDate ? "上周已完成" : "昨日已完成"}
           tone="success"
           value={data.sourceCompleted.length}
         />

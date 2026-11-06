@@ -11,6 +11,7 @@
 - **左侧工具导航**：为后续工具预留位置，当前仅启用「日报助手」。
 - **按日期查看日报**：支持前后一天、日期选择、回到今天。
 - **完成事项记录**：在日期 D 记录完成事项，会自动出现在 D+1 的「昨日已完成」。
+- **周一汇总上周**：周一查看日报时，「昨日已完成」会汇总上一整周（上周一至周日）的全部完成事项。
 - **今日计划**：在日期 D 记录计划事项，会直接进入 D 的「今日计划」。
 - **最近记录回退**：如果昨天没有完成记录，会自动向前找最近一次有记录的工作日，并在界面上标注。
 - **一键复制**：按模板生成纯文本日报，复制后直接粘贴到工作群。
@@ -92,6 +93,7 @@ npm run dev
 | `npm run db:migrate:remote` | 应用远程 D1 迁移 |
 | `npm run preview` | OpenNext 构建 + 本地 Workers 预览 |
 | `npm run deploy` | OpenNext 构建 + 部署到 Cloudflare Workers |
+| `npm run deploy:win` | 同上，Windows 无管理员权限时使用（自动改用项目内临时目录） |
 | `npm run upload` | 上传新版本但不部署 |
 | `npm run cf-typegen` | 根据 Wrangler 配置重新生成绑定类型 |
 
@@ -135,6 +137,14 @@ npm run db:migrate:remote
 ```bash
 npm run deploy
 ```
+
+Windows 上如果报 `Access is denied ... open-next-tmp...`，改用：
+
+```bash
+npm run deploy:win
+```
+
+它会把 `TEMP`/`TMP` 指到项目内的 `.wrangler-tmp\temp` 后再构建部署，不需要管理员权限。
 
 部署成功后会得到一个 `https://my-tools.<your-subdomain>.workers.dev` 地址。之后每次发布：
 

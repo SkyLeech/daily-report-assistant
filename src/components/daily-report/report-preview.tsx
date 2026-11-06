@@ -24,7 +24,9 @@ export function ReportPreview({ data }: { data: DailyReportData }) {
           </div>
           <p className="mt-2 text-xs leading-5 text-muted">
             发送日期 {formatDateWithWeekday(data.date)} · 完成事项来自{" "}
-            {formatMonthDay(data.sourceDate)}
+            {data.sourceEndDate
+              ? `上周（${formatMonthDay(data.sourceDate)} - ${formatMonthDay(data.sourceEndDate)}）`
+              : formatMonthDay(data.sourceDate)}
           </p>
         </div>
         <CopyReportButton compact content={data.content} />
@@ -53,7 +55,7 @@ export function ReportPreview({ data }: { data: DailyReportData }) {
       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 pb-5 text-[11px] text-muted sm:px-6">
         <span className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-success" />
-          昨日已完成 {data.sourceCompleted.length}
+          {data.sourceEndDate ? "上周已完成" : "昨日已完成"} {data.sourceCompleted.length}
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="size-1.5 rounded-full bg-accent" />

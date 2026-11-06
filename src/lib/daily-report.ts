@@ -18,6 +18,7 @@ export type ReportItem = {
 export type DailyReportData = {
   date: string;
   sourceDate: string;
+  sourceEndDate: string | null;
   sourceIsRecent: boolean;
   template: string;
   completedToday: ReportItem[];
@@ -62,6 +63,8 @@ function mapItem(row: ReportItemRow): ReportItem | null {
 
 export async function getDailyReportData(date: string): Promise<DailyReportData> {
   const db = await getDb();
+  // 周一：汇总上一整周（上周一至周日）的完成事项
+  const isMonday = new Date(`${date}T00:00:00.000Z`).getUTCDay() === 1;
 
   const [dayRowsResult, sourceDateRow, templateRow] = await Promise.all([
     db
@@ -89,17 +92,30 @@ export async function getDailyReportData(date: string): Promise<DailyReportData>
       .first<SettingRow>(),
   ]);
 
-  const sourceDate = sourceDateRow?.item_date ?? addDays(date, -1);
+  const sourceDate = isMonday
+    ? addDays(date, -7)
+    : (sourceDateRow?.item_date ?? addDays(date, -1));
+  const sourceEndDate = isMonday ? addDays(date, -1) : null;
 
-  const sourceRowsResult = await db
-    .prepare(
-      `SELECT id, item_date, kind, content, created_at
-       FROM report_items
-       WHERE item_date = ? AND kind = 'completed'
-       ORDER BY sort_order, created_at`,
-    )
-    .bind(sourceDate)
-    .all<ReportItemRow>();
+  const sourceRowsResult = isMonday
+    ? await db
+        .prepare(
+          `SELECT id, item_date, kind, content, created_at
+           FROM report_items
+           WHERE kind = 'completed' AND item_date BETWEEN ? AND ?
+           ORDER BY item_date, sort_order, created_at`,
+        )
+        .bind(sourceDate, sourceEndDate)
+        .all<ReportItemRow>()
+    : await db
+        .prepare(
+          `SELECT id, item_date, kind, content, created_at
+           FROM report_items
+           WHERE item_date = ? AND kind = 'completed'
+           ORDER BY sort_order, created_at`,
+        )
+        .bind(sourceDate)
+        .all<ReportItemRow>();
 
   const dayItems = dayRowsResult.results
     .map(mapItem)
@@ -116,14 +132,15 @@ export async function getDailyReportData(date: string): Promise<DailyReportData>
   return {
     date,
     sourceDate,
-    sourceIsRecent: sourceDate !== addDays(date, -1),
+    sourceEndDate,
+    sourceIsRecent: !isMonday && sourceDate !== addDays(date, -1),
     template,
     completedToday,
     plannedToday,
     sourceCompleted,
     content: renderReportTemplate(template, {
       date,
-      sourceDate,
+      sourceDate: sourceEndDate ? `${sourceDate} ~ ${sourceEndDate}` : sourceDate,
       completed: sourceCompleted.map((item) => item.content),
       planned: plannedToday.map((item) => item.content),
     }),
